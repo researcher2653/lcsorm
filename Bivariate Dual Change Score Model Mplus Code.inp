@@ -1,0 +1,109 @@
+TTITLE: Bivariate Dual Change Model Mplus Code; 
+DATA: FILE = mydata.csv;
+VARIABLE: NAMES = 
+id
+pay_sat1
+pay_sat2
+pay_sat3
+pay_sat4
+lif_sat1
+lif_sat2
+lif_sat3
+lif_sat4
+;
+
+missing are all (-999);
+USEVAR = 
+pay_sat1 pay_sat2 pay_sat3 pay_sat4 
+lif_sat1 lif_sat2 lif_sat3 lif_sat4;
+
+ MODEL:
+!Latent True Scores for Pay Satisfaction
+lpay1 BY pay_sat1@1;
+lpay2 BY pay_sat2@1;
+lpay3 BY pay_sat3@1;
+lpay4 BY pay_sat4@1;
+
+[lpay1];  lpay1;
+[lpay2 - lpay4@0];
+lpay2 - lpay4@0;
+[pay_sat1- pay_sat4@0];
+pay_sat1-pay_sat4 (resvar_x);
+
+!Autoregressions for Pay Satisfaction
+lpay2 ON lpay1@1;
+lpay3 ON lpay2@1;
+lpay4 ON lpay3@1;
+
+!Latent Change Factors for Pay Satisfaction
+dpay2 BY lpay2@1;
+dpay3 BY lpay3@1;
+dpay4 BY lpay4@1;
+[dpay2-dpay4@0];
+dpay2-dpay4@0;
+
+!Constant Change for Pay Satisfaction
+g1 BY dpay2-dpay4@1;
+g1;    [g1];
+lpay1 with g1;
+
+!Proportional Change Effects for Pay Satisfaction
+dpay2 on lpay1 (pc_x);
+dpay3 on lpay2 (pc_x);
+dpay4 on lpay3 (pc_x);
+
+!Latent True Scores for Life Satisfaction
+llife1 BY lif_sat1@1;
+llife2 BY lif_sat2@1;
+llife3 BY lif_sat3@1;
+llife4 BY lif_sat4@1;
+
+[llife1];  llife1;
+[llife2 - llife4@0];
+llife2 - llife4@0;
+[lif_sat1- lif_sat4@0];
+lif_sat1-lif_sat4 (resvar_y);
+
+!Autoregressions for Life Satisfaction
+llife2 ON llife1@1;
+llife3 ON llife2@1;
+llife4 ON llife3@1;
+
+!Latent Change Factors for Life Satisfaction
+dlife2 BY llife2@1;
+dlife3 BY llife3@1;
+dlife4 BY llife4@1;
+[dlife2-dlife4@0];
+dlife2-dlife4@0;
+
+!Constant Change for Life Satisfaction
+h1 BY dlife2-dlife4@1;
+h1;    [h1];
+llife1 with h1;
+
+!Proportional Change Effects for Life Satisfaction
+dlife2 on llife1 (pc_y);
+dlife3 on llife2 (pc_y);
+ dlife4 on llife3 (pc_y);
+
+!Intercept and Constant Change Parameter Covariances
+g1 with h1; 
+g1 with llife1; 
+h1 with lpay1; 
+lpay1 with llife1; 
+
+!Residual Covariances
+pay_sat1 with lif_sat1 (r_cov);
+pay_sat2 with lif_sat2 (r_cov); 
+pay_sat3 with lif_sat3 (r_cov); 
+pay_sat4 with lif_sat4 (r_cov); 
+
+!Coupling Effects of Pay Satisfaction on Life Satisfaction - constrained to zero to test     nested models
+dpay2 on llife1 (cpl_x);
+dpay3 on llife2 (cpl_x);
+dpay4 on llife3 (cpl_x);	
+
+!Coupling Effects of Life Satisfaction on Pay Satisfaction - constrained to zero to test nested models
+dlife2 on lpay1 (cpl_y);
+dlife3 on lpay2 (cpl_y);
+dlife4 on lpay3 (cpl_y);

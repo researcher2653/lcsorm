@@ -1,0 +1,52 @@
+TTITLE: Constant Change Model Mplus Code; 
+DATA: FILE = mydata.csv;
+VARIABLE: NAMES = 
+id
+pay_sat1
+pay_sat2
+pay_sat3
+pay_sat4
+lif_sat1
+lif_sat2
+lif_sat3
+lif_sat4
+;
+
+missing are all (-999);
+USEVAR = pay_sat1 pay_sat2 pay_sat3 pay_sat4;
+
+MODEL:
+!Latent True Scores
+lpay1 BY pay_sat1@1;
+lpay2 BY pay_sat2@1;
+lpay3 BY pay_sat3@1;
+lpay4 BY pay_sat4@1;
+
+[lpay1];  lpay1;
+[lpay2 - lpay4@0];
+lpay2 - lpay4@0;
+[pay_sat1-pay_sat4@0];
+pay_sat1-pay_sat4 (resvar);
+
+!Autoregressions
+lpay2 ON lpay1@1;
+lpay3 ON lpay2@1;
+lpay4 ON lpay3@1;
+
+!Latent Change Factors
+dpay2 BY lpay2@1;
+dpay3 BY lpay3@1;
+dpay4 BY lpay4@1;
+[dpay2-dpay4@0];
+dpay2-dpay4@0;
+
+!Constant Change
+g1 BY dpay2-dpay4@1;
+g1;    [g1];
+lpay1 with g1;
+
+!Proportional Change Effects - Constrained to Zero
+dpay2 on lpay1@0 (pc);
+dpay3 on lpay2@0 (pc);
+dpay4 on lpay3@0 (pc);
+
